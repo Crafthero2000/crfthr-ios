@@ -1,4 +1,4 @@
-name: Bootstrap Flutter project + build unsigned iOS IPA
+name: Bootstrap Flutter + build unsigned iOS IPA
 
 on:
   workflow_dispatch:
@@ -7,47 +7,41 @@ permissions:
   contents: write
 
 jobs:
-  bootstrap_and_build:
+  build:
     runs-on: macos-latest
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Set up Flutter
-        uses: subosito/flutter-action@v2
+      - uses: subosito/flutter-action@v2
         with:
           channel: stable
 
       - name: Bootstrap Flutter project if missing
         run: |
           set -e
-          if [ -f pubspec.yaml ]; then
-            echo "pubspec.yaml exists → project already bootstrapped"
-            exit 0
+          if [ ! -f pubspec.yaml ]; then
+            echo "No pubspec.yaml → bootstrapping Flutter project in repo root"
+            flutter create . --project-name ios_test_app --org com.example
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add -A
+            git commit -m "Bootstrap Flutter project"
+            git push
+          else
+            echo "pubspec.yaml exists → skip bootstrap"
           fi
-
-          # создаём Flutter-проект прямо в корне репозитория
-          flutter create . --project-name ios_test_app --org com.example
-
-          # фиксируем изменения
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add -A
-          git commit -m "Bootstrap Flutter project"
-          git push
 
       - name: Get dependencies
         run: flutter pub get
 
-      - name: Install CocoaPods
-        run: sudo gem install cocoapods --no-document
-
-      - name: Pod install
+      - name: Ensure iOS folder exists
         run: |
-          cd ios
-          pod install
-          cd ..
+          if [ ! -d ios ]; then
+            echo "ERROR: ios/ folder is missing even after bootstrap."
+            ls -la
+            exit 1
+          fi
 
       - name: Build iOS app (no codesign)
         run: flutter build ios --release --no-codesign
@@ -59,8 +53,7 @@ jobs:
           cp -R Runner.app Payload/
           zip -r unsigned.ipa Payload
 
-      - name: Upload IPA artifact
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
           name: unsigned-ipa
           path: build/ios/iphoneos/unsigned.ipa
