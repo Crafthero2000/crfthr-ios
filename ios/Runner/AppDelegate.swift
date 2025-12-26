@@ -9,7 +9,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
     let window = UIWindow(frame: UIScreen.main.bounds)
-    window.rootViewController = GlassViewController()
+    let root = GlassViewController(style: .insetGrouped)
+    let navigation = UINavigationController(rootViewController: root)
+    navigation.navigationBar.prefersLargeTitles = true
+    window.rootViewController = navigation
     window.makeKeyAndVisible()
     self.window = window
     return true
