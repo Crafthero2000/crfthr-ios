@@ -1,4 +1,4 @@
-name: Build unsigned iOS IPA (Flutter)
+name: Build unsigned iOS IPA (UIKit)
 
 on:
   workflow_dispatch:
@@ -13,41 +13,20 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: subosito/flutter-action@v2
-        with:
-          channel: stable
-
-      - name: Flutter pub get
-        run: flutter pub get
-
-      - name: Bootstrap iOS folder if missing
-        run: |
-          set -e
-          if [ ! -d ios ]; then
-            flutter create . --platforms=ios --project-name ios_test_app --org com.example
-            git config user.name "github-actions[bot]"
-            git config user.email "github-actions[bot]@users.noreply.github.com"
-            git add -A
-            git commit -m "Generate iOS platform"
-            git push
-          fi
-
       - name: Build iOS app for device (iphoneos, no codesign)
         run: |
-          cd ios
-          rm -rf ../DerivedData
+          rm -rf DerivedData
           xcodebuild \
-            -workspace Runner.xcworkspace \
+            -project ios/Runner.xcodeproj \
             -scheme Runner \
             -configuration Release \
             -sdk iphoneos \
             -destination 'generic/platform=iOS' \
-            -derivedDataPath ../DerivedData \
+            -derivedDataPath DerivedData \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGN_IDENTITY="" \
             build
-          cd ..
 
       - name: (Debug) list build products
         run: |
