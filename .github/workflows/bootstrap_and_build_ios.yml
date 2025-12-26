@@ -32,12 +32,12 @@ jobs:
             git push
           fi
 
-      - name: Build iOS app (no codesign)
-        run: flutter build ios --release --no-codesign
+      - name: Build iOS app (simulator)
+        run: flutter build ios --release --simulator
 
-      - name: Package unsigned IPA
+      - name: Package unsigned IPA (from simulator build)
         run: |
-          cd build/ios/iphoneos
+          cd build/ios/iphonesimulator
           mkdir -p Payload
           cp -R Runner.app Payload/
           zip -r unsigned.ipa Payload
@@ -45,4 +45,4 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: unsigned-ipa
-          path: build/ios/iphoneos/unsigned.ipa
+          path: build/ios/iphonesimulator/unsigned.ipa
