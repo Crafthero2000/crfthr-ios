@@ -33,7 +33,7 @@ jobs:
           fi
 
       - name: Build iOS app (simulator)
-        run: flutter build ios --release --simulator
+        run: flutter build ios --simulator
 
       - name: Package unsigned IPA (from simulator build)
         run: |
