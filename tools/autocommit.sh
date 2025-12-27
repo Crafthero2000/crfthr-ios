@@ -14,6 +14,7 @@ fi
 
 msg="chore: autosave"
 push=false
+force=false
 
 if [ $# -gt 0 ] && [[ "${1}" != "-"* ]]; then
   msg="$1"
@@ -33,18 +34,27 @@ while [ $# -gt 0 ]; do
     --push)
       push=true
       ;;
+    --force)
+      force=true
+      ;;
   esac
   shift
 done
 
-git add -A
-if ! git commit -m "$msg" --no-verify >/dev/null 2>&1; then
-  echo "nothing to commit"
-  exit 0
+if ! $force; then
+  files="$(git diff --name-only | wc -l)"
+  lines="$(git diff --numstat | awk '{a+=$1+$2} END {print a+0}')"
+  if [ "$files" -lt 2 ] && [ "$lines" -lt 40 ]; then
+    echo "threshold not reached"
+    exit 0
+  fi
 fi
+
+git add -A
+git commit -m "$msg" --no-verify || (echo "nothing to commit"; exit 0)
 
 if $push; then
-  git push >/dev/null 2>&1 || true
+  git push || true
 fi
 
-git log -1 --format="%h %s"
+git log -1 --oneline
