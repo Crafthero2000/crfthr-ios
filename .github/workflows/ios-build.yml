@@ -2,6 +2,7 @@ name: iOS Build
 
 on:
   workflow_dispatch:
+    # Manual run enabled via GitHub Actions.
   push:
     branches: [ main ]
 
