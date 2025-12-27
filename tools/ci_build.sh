@@ -20,7 +20,7 @@ if [ "$branch" = "HEAD" ]; then
 fi
 
 start_epoch=$(date +%s)
-gh workflow run .github/workflows/ios-build.yml --ref "$branch"
+gh workflow run "219005466" --ref "$branch"
 
 runid=""
 for attempt in 1 2 3; do
