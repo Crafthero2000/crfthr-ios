@@ -12,6 +12,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Guard: repository must be clean before build
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "ERROR: Working tree is not clean before build."
+            git status --porcelain
+            exit 1
+          fi
+
       - name: Validate Swift files are UTF-8
         run: |
           python3 - <<'PY'
@@ -50,6 +58,11 @@ jobs:
           mkdir -p Payload
           cp -R "$APP_PATH" Payload/
           /usr/bin/zip -r Runner-unsigned.ipa Payload
+
+      - name: Guard: build must not modify tracked files
+        run: |
+          git diff --exit-code
+          git diff --cached --exit-code
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4

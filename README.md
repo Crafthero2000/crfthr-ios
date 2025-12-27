@@ -1,58 +1,65 @@
-# crfthr-ios
+﻿# crfthr-ios
 
-Offline iOS chat assistant that runs local LLMs on-device with MLX Swift.
+Офлайн iOS-ассистент для чата, запускающий локальные LLM на устройстве через MLX Swift.
 
-## Overview
-- Native iOS SwiftUI app (no cloud APIs)
-- MLX Swift + MLXLMCommon for model loading and streaming generation
-- Model download/import, persistent chat history, and JSON export
+## Обзор
+- Нативное приложение iOS на SwiftUI (без облачных API)
+- MLX Swift + MLXLMCommon для загрузки модели и потоковой генерации
+- Загрузка/импорт моделей, постоянная история чата и экспорт в JSON
 
-## Model formats
-This app expects MLX-compatible Hugging Face repos (e.g. `mlx-community/...`) that include:
+## Форматы моделей
+Приложение ожидает MLX-совместимые репозитории Hugging Face (например, `mlx-community/...`), в которых есть:
 - `config.json`
-- one or more `*.safetensors`
-- tokenizer files (e.g. `tokenizer.json`, `tokenizer_config.json`, `special_tokens_map.json`)
-- optional `generation_config.json`
+- один или несколько `*.safetensors`
+- файлы токенизатора (например, `tokenizer.json`, `tokenizer_config.json`, `special_tokens_map.json`)
+- необязательный `generation_config.json`
 
-If a repo is missing any of the above, the app will report a loading error (e.g. missing tokenizer or incompatible structure).
+Если в репозитории чего-то из этого нет, приложение сообщит об ошибке загрузки (например, нет токенизатора или структура несовместима).
 
-References:
+Ссылки:
 - https://github.com/ml-explore/mlx-swift
 - https://github.com/ml-explore/mlx-swift-lm
 - https://github.com/ml-explore/mlx-lm
 
-## Using the app
-1) Open the **Models** tab and download a model by Hugging Face repo ID (default suggestion: `mlx-community/Qwen2.5-1.5B-Instruct-4bit`).
-2) Switch to **Settings** and select the downloaded model.
-3) Use the **Chat** tab to send prompts and watch streaming output.
+## Использование приложения
+1) Откройте вкладку **Models** и скачайте модель по ID репозитория Hugging Face (рекомендуется: `mlx-community/Qwen2.5-1.5B-Instruct-4bit`).
+2) Перейдите в **Settings** и выберите скачанную модель.
+3) На вкладке **Chat** отправляйте запросы и смотрите потоковый ответ.
 
-### Importing a model
-Use **Models > Import from Files** to copy a local MLX model folder into the app sandbox. The folder must contain MLX-compatible files.
+### Импорт модели
+Используйте **Models > Import from Files**, чтобы скопировать локальную папку модели MLX в песочницу приложения. Папка должна содержать MLX-совместимые файлы.
 
-### Where models are stored
-Downloaded models are cached in the app sandbox cache directory managed by MLX Hub downloads.
-Imported models are copied into the app support directory under `Crfthr/ImportedModels`.
+### Где хранятся модели
+Скачанные модели кешируются в директории cache песочницы, которую использует MLX Hub.
+Импортированные модели копируются в директорию app support по пути `Crfthr/ImportedModels`.
 
-### Exporting history
-In **Chat**, use the **Export** button to save JSON in the format:
+### Экспорт истории
+В **Chat** нажмите **Export**, чтобы сохранить JSON в формате:
 ```json
 [{"role":"user","content":"..."}, {"role":"assistant","content":"..."}]
 ```
 
-## GitHub Actions build
-This repository includes an iOS build workflow:
-- Trigger manually from **Actions > iOS Build > Run workflow**, or push to `main`.
-- The workflow builds an unsigned Release app and uploads `Runner-unsigned.ipa` as an artifact.
+## Сборка в GitHub Actions
+В репозитории есть workflow сборки iOS:
+- Запускается вручную из **Actions > iOS Build > Run workflow** или при пуше в `main`.
+- Собирает unsigned Release приложение и загружает `Runner-unsigned.ipa` как артефакт.
 
-## Installing the IPA (sideload)
-You can sideload the unsigned IPA using tools such as:
+## Установка IPA (sideload)
+Вы можете установить unsigned IPA с помощью:
 - AltStore
 - Sideloadly
 
-General steps:
-1) Download the `Runner-unsigned.ipa` artifact from GitHub Actions.
-2) Use your sideloading tool to install the IPA onto your device.
+Общие шаги:
+1) Скачайте артефакт `Runner-unsigned.ipa` из GitHub Actions.
+2) Используйте ваш sideload-инструмент, чтобы установить IPA на устройство.
 
-## Notes
-- The model weights are not included in the repo and must be downloaded or imported at runtime.
-- Long conversations are summarized by the model using a strict template (�����/��������/�����) to stay within context limits.
+## Автокоммит
+Примеры запуска:
+```bash
+./tools/autocommit.sh --force --message "chore: autosave before CI"
+./tools/autocommit.sh --force --message "feat: ..." --push
+```
+
+## Заметки
+- Веса модели не входят в репозиторий и должны быть загружены или импортированы во время работы приложения.
+- Длинные диалоги суммируются моделью по строгому шаблону (Факты/Контекст/Стиль), чтобы оставаться в пределах контекстного окна.
