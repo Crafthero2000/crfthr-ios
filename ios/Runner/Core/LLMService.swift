@@ -141,13 +141,13 @@ actor LLMService {
   private func generateSummary(previousSummary: String?, messages: [ChatMessage]) async throws -> String {
     guard let container = modelContainer else { throw LLMServiceError.modelNotLoaded }
 
-    let instruction = "Ты сохраняешь краткую память диалога. Используй ровно шаблон:\nФакты: ...\nКонтекст: ...\nСтиль: ..."
+    let instruction = "РўС‹ СЃРѕС…СЂР°РЅСЏРµС€СЊ РєСЂР°С‚РєСѓСЋ РїР°РјСЏС‚СЊ РґРёР°Р»РѕРіР°. РСЃРїРѕР»СЊР·СѓР№ СЂРѕРІРЅРѕ С€Р°Р±Р»РѕРЅ:\nР¤Р°РєС‚С‹: ...\nРљРѕРЅС‚РµРєСЃС‚: ...\nРЎС‚РёР»СЊ: ..."
 
     var bodyLines: [String] = []
     if let previousSummary, !previousSummary.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-      bodyLines.append("Предыдущее резюме:\n\(previousSummary)")
+      bodyLines.append("РџСЂРµРґС‹РґСѓС‰РµРµ СЂРµР·СЋРјРµ:\n\(previousSummary)")
     }
-    bodyLines.append("Новые сообщения:")
+    bodyLines.append("РќРѕРІС‹Рµ СЃРѕРѕР±С‰РµРЅРёСЏ:")
     bodyLines.append(contentsOf: messages.map { "\($0.role.rawValue): \($0.content)" })
 
     let chat: [Chat.Message] = [
@@ -233,4 +233,4 @@ actor LLMService {
     raw.append(contentsOf: messages.map { ["role": $0.role.rawValue, "content": $0.content] })
     return raw
   }
-}
+}

@@ -19,7 +19,7 @@ final class ChatViewModel: ObservableObject {
       case .idle:
         return nil
       case .loading(let progress):
-        return String(format: "Loading model… %.0f%%", progress * 100)
+        return String(format: "Loading modelâ€¦ %.0f%%", progress * 100)
       case .ready:
         return "Model ready"
       case .failed(let message):
@@ -144,4 +144,4 @@ final class ChatViewModel: ObservableObject {
     guard let index = messages.firstIndex(where: { $0.id == id }) else { return }
     messages[index].content = content
   }
-}
+}

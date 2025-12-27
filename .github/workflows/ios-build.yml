@@ -12,6 +12,24 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Validate Swift files are UTF-8
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          bad = []
+          for path in Path("ios").rglob("*.swift"):
+              data = path.read_bytes()
+              try:
+                  data.decode("utf-8")
+              except UnicodeDecodeError as exc:
+                  bad.append((path, exc))
+          if bad:
+              for path, exc in bad:
+                  print(f"{path}: {exc}")
+              raise SystemExit(1)
+          print("All .swift files are valid UTF-8.")
+          PY
+
       - name: Build app (unsigned)
         run: |
           xcodebuild \
@@ -19,7 +37,9 @@ jobs:
             -scheme Runner \
             -configuration Release \
             -sdk iphoneos \
+            -destination 'generic/platform=iOS' \
             -derivedDataPath build \
+            build \
             CODE_SIGNING_ALLOWED=NO
 
           APP_PATH="build/Build/Products/Release-iphoneos/Runner.app"
