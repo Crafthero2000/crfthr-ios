@@ -183,6 +183,24 @@
 			);
 			dependencies = (
 			);
+			name = RunnerTests;
+			productName = RunnerTests;
+			productReference = 331C8081294A63A400263BE5 /* RunnerTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		97C146ED1CF9000F007C117D /* Runner */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 97C147051CF9000F007C117D /* Build configuration list for PBXNativeTarget "Runner" */;
+			buildPhases = (
+				97C146EA1CF9000F007C117D /* Sources */,
+				97C146EB1CF9000F007C117D /* Frameworks */,
+				97C146EC1CF9000F007C117D /* Resources */,
+				9705A1C41CF9048500538489 /* Embed Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
 			packageProductDependencies = (
 				1C1DCB3690E28CEC6500F476 /* MLX */,
 				773C5820D4D04C7D20318FA2 /* MLXLMCommon */,
