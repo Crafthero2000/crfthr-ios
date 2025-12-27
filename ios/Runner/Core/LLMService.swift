@@ -78,7 +78,7 @@ actor LLMService {
     guard limit > 0 else { return (summary, messages) }
     guard messages.count > 8 else { return (summary, messages) }
 
-    let estimatedTokens = try await estimateTokenCount(messages: messages, summary: summary)
+    let estimatedTokens = await estimateTokenCount(messages: messages, summary: summary)
     if estimatedTokens <= limit { return (summary, messages) }
 
     let keepCount = 8
@@ -187,10 +187,10 @@ actor LLMService {
     }
   }
 
-  private func estimateTokenCount(messages: [ChatMessage], summary: String?) async throws -> Int {
+  private func estimateTokenCount(messages: [ChatMessage], summary: String?) async -> Int {
     guard let container = modelContainer else { return approximateTokenCount(messages: messages, summary: summary) }
 
-    return try await container.perform { context in
+    return await container.perform { context in
       let rawMessages = buildRawMessages(messages: messages, summary: summary)
       do {
         let tokens = try context.tokenizer.applyChatTemplate(messages: rawMessages)

@@ -37,7 +37,7 @@ struct SettingsView: View {
         }
 
         VStack(alignment: .leading) {
-          Text("Temperature: \(viewModel.generation.temperature, specifier: \"%.2f\")")
+          Text("Temperature: \(viewModel.generation.temperature, specifier: "%.2f")")
           Slider(
             value: Binding(
               get: { viewModel.generation.temperature },
@@ -52,7 +52,7 @@ struct SettingsView: View {
         }
 
         VStack(alignment: .leading) {
-          Text("Top P: \(viewModel.generation.topP, specifier: \"%.2f\")")
+          Text("Top P: \(viewModel.generation.topP, specifier: "%.2f")")
           Slider(
             value: Binding(
               get: { viewModel.generation.topP },
