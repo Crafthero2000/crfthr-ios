@@ -44,6 +44,18 @@
 - Запускается вручную из **Actions > iOS Build > Run workflow** или при пуше в `main`.
 - Собирает unsigned Release приложение и загружает `Runner-unsigned.ipa` как артефакт.
 
+## Скрипт запуска workflow
+Требования:
+- Установить GitHub CLI (`gh`)
+- Выполнить `gh auth login`
+
+Запуск:
+```bash
+./tools/ci_build.sh
+```
+
+Артефакты сохраняются в `$HOME/Downloads/crfthr-builds`.
+
 ## Установка IPA (sideload)
 Вы можете установить unsigned IPA с помощью:
 - AltStore
