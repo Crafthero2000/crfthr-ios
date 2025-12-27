@@ -87,7 +87,7 @@ actor ChatStore {
   func exportItems() -> [ChatExportItem] {
     var items: [ChatExportItem] = []
     if let summary {
-      items.append(ChatExportItem(role: "system", content: "Memory:\n\(summary)"))
+      items.append(ChatExportItem(role: "system", content: "Память:\n\(summary)"))
     }
     items.append(contentsOf: messages.map { ChatExportItem(role: $0.role.rawValue, content: $0.content) })
     return items

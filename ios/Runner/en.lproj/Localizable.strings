@@ -1,0 +1,58 @@
+﻿"tab.chat" = "Chat";
+"tab.models" = "Models";
+"tab.settings" = "Settings";
+
+"chat.title" = "Local Assistant";
+"action.export" = "Export";
+"action.clear" = "Clear";
+"action.done" = "Done";
+"export.text" = "Export TXT";
+"export.json" = "Export JSON";
+
+"settings.section.model" = "Model";
+"settings.no_models" = "No models installed yet. Download one in the Models tab.";
+"settings.none" = "None";
+"settings.selected_model" = "Selected model";
+"settings.section.generation" = "Generation";
+"settings.max_tokens" = "Max tokens: %d";
+"settings.temperature" = "Temperature: %.2f";
+"settings.top_p" = "Top P: %.2f";
+"settings.context_limit" = "Context limit: %d";
+"settings.section.system_prompt" = "System prompt";
+"settings.system_prompt.placeholder" = "Describe style and rules for responses...";
+"settings.system_prompt.help" = "Affects style and rules of the answer.";
+"settings.system_prompt.reset" = "Reset to default";
+"settings.title" = "Settings";
+
+"models.section.installed" = "Installed";
+"models.none" = "No models downloaded yet.";
+"models.badge.imported" = "Imported";
+"models.section.download" = "Download from Hugging Face";
+"models.repo_id.placeholder" = "Repo ID (e.g. mlx-community/Qwen2.5-1.5B-Instruct-4bit)";
+"models.action.download" = "Download model";
+"models.section.suggested" = "Suggested";
+"models.section.import" = "Import local model";
+"models.action.import" = "Import from Files";
+"models.section.error" = "Error";
+"models.title" = "Models";
+
+"models.status.starting" = "Starting download...";
+"models.status.downloaded" = "Downloaded";
+"models.status.importing" = "Importing...";
+"models.status.imported" = "Imported";
+"models.error.access" = "Unable to access the selected folder.";
+
+"status.loading_model" = "Loading model... %.0f%%";
+"status.model_ready" = "Model ready";
+
+"export.role.user" = "You";
+"export.role.assistant" = "Assistant";
+"export.role.system" = "System";
+"export.separator" = "---";
+
+"error.model.not_selected" = "No model selected. Choose one in Settings or download a model.";
+"error.model.not_available" = "Selected model is not available. Download or import it first.";
+"error.model.missing" = "Model files are missing in the app sandbox.";
+"error.model.not_loaded" = "Model is not loaded.";
+"error.model.load_failed" = "Failed to load model: %@";
+"error.generation_failed" = "Generation failed: %@";

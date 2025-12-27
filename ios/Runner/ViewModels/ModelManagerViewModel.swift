@@ -32,7 +32,7 @@ final class ModelManagerViewModel: ObservableObject {
 
     isDownloading = true
     downloadProgress = 0
-    downloadStatus = "Starting download..."
+    downloadStatus = NSLocalizedString("models.status.starting", comment: "Download starting")
     errorMessage = nil
 
     Task {
@@ -47,7 +47,7 @@ final class ModelManagerViewModel: ObservableObject {
         models = await modelStore.allModels()
         await settingsStore.updateSelectedModelId(record.id)
         isDownloading = false
-        downloadStatus = "Downloaded"
+        downloadStatus = NSLocalizedString("models.status.downloaded", comment: "Download complete")
       } catch {
         isDownloading = false
         errorMessage = error.localizedDescription
@@ -57,7 +57,7 @@ final class ModelManagerViewModel: ObservableObject {
 
   func importModel(from url: URL, displayName: String) {
     isDownloading = true
-    downloadStatus = "Importing..."
+    downloadStatus = NSLocalizedString("models.status.importing", comment: "Importing")
     errorMessage = nil
 
     Task {
@@ -70,7 +70,7 @@ final class ModelManagerViewModel: ObservableObject {
 
       guard didAccess else {
         isDownloading = false
-        errorMessage = "Unable to access the selected folder."
+        errorMessage = NSLocalizedString("models.error.access", comment: "Access folder failed")
         return
       }
 
@@ -78,7 +78,7 @@ final class ModelManagerViewModel: ObservableObject {
         _ = try await modelStore.importModel(from: url, displayName: displayName)
         models = await modelStore.allModels()
         isDownloading = false
-        downloadStatus = "Imported"
+        downloadStatus = NSLocalizedString("models.status.imported", comment: "Imported")
       } catch {
         isDownloading = false
         errorMessage = error.localizedDescription

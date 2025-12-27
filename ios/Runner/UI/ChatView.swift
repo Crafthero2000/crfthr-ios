@@ -1,9 +1,9 @@
 import SwiftUI
+import UIKit
 
 struct ChatView: View {
   @ObservedObject var viewModel: ChatViewModel
-  @State private var isExporting = false
-  @State private var exportDocument: ChatHistoryDocument?
+  @FocusState private var isInputFocused: Bool
 
   var body: some View {
     VStack(spacing: 0) {
@@ -26,6 +26,12 @@ struct ChatView: View {
             }
           }
           .padding(.vertical, 16)
+        }
+        .scrollDismissesKeyboard(.interactively)
+        .contentShape(Rectangle())
+        .onTapGesture {
+          UIApplication.shared.hideKeyboard()
+          isInputFocused = false
         }
         .onChange(of: viewModel.messages.count) { _ in
           if let lastId = viewModel.messages.last?.id {
@@ -52,6 +58,7 @@ struct ChatView: View {
           .padding(8)
           .background(Color(.secondarySystemBackground))
           .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+          .focused($isInputFocused)
 
         Button {
           viewModel.sendMessage()
@@ -67,18 +74,21 @@ struct ChatView: View {
       .padding()
       .background(Color(.systemBackground))
     }
-    .navigationTitle("Local Assistant")
+    .navigationTitle("chat.title")
     .toolbar {
       ToolbarItem(placement: .topBarTrailing) {
-        Button {
-          Task {
-            if let data = await viewModel.exportHistoryData() {
-              exportDocument = ChatHistoryDocument(data: data)
-              isExporting = true
-            }
+        Menu {
+          ShareLink(item: viewModel.exportText) {
+            Label("export.text", systemImage: "doc.plaintext")
           }
+          .disabled(viewModel.exportText.isEmpty)
+
+          ShareLink(item: viewModel.exportJSON) {
+            Label("export.json", systemImage: "doc.text")
+          }
+          .disabled(viewModel.exportJSON.isEmpty)
         } label: {
-          Label("Export", systemImage: "square.and.arrow.up")
+          Label("action.export", systemImage: "square.and.arrow.up")
         }
       }
 
@@ -86,18 +96,16 @@ struct ChatView: View {
         Button {
           Task { await viewModel.clearHistory() }
         } label: {
-          Label("Clear", systemImage: "trash")
+          Label("action.clear", systemImage: "trash")
         }
       }
-    }
-    .fileExporter(
-      isPresented: $isExporting,
-      document: exportDocument,
-      contentType: .json,
-      defaultFilename: "chat-history"
-    ) { result in
-      if case .failure(let error) = result {
-        viewModel.errorMessage = error.localizedDescription
+
+      ToolbarItemGroup(placement: .keyboard) {
+        Spacer()
+        Button("action.done") {
+          UIApplication.shared.hideKeyboard()
+          isInputFocused = false
+        }
       }
     }
   }

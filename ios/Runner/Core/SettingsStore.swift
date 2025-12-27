@@ -17,8 +17,31 @@ struct GenerationSettings: Codable, Equatable {
 struct AppSettings: Codable, Equatable {
   var selectedModelId: String?
   var generation: GenerationSettings
+  var systemPrompt: String
 
-  static let defaults = AppSettings(selectedModelId: nil, generation: .defaults)
+  static let defaultSystemPrompt = """
+  Ты — дружелюбный русскоязычный помощник. Отвечай коротко и по делу, без канцелярита. Не говори, что ты робот. Если не знаешь — скажи честно. Разрешен markdown (списки, код-блоки).
+  """
+
+  static let defaults = AppSettings(
+    selectedModelId: nil,
+    generation: .defaults,
+    systemPrompt: defaultSystemPrompt
+  )
+
+  init(selectedModelId: String?, generation: GenerationSettings, systemPrompt: String) {
+    self.selectedModelId = selectedModelId
+    self.generation = generation
+    self.systemPrompt = systemPrompt
+  }
+
+  init(from decoder: Decoder) throws {
+    let container = try decoder.container(keyedBy: CodingKeys.self)
+    let selectedModelId = try container.decodeIfPresent(String.self, forKey: .selectedModelId)
+    let generation = try container.decodeIfPresent(GenerationSettings.self, forKey: .generation) ?? .defaults
+    let systemPrompt = try container.decodeIfPresent(String.self, forKey: .systemPrompt) ?? AppSettings.defaultSystemPrompt
+    self.init(selectedModelId: selectedModelId, generation: generation, systemPrompt: systemPrompt)
+  }
 }
 
 actor SettingsStore {
@@ -48,6 +71,11 @@ actor SettingsStore {
 
   func updateSelectedModelId(_ id: String?) {
     settings.selectedModelId = id
+    persist()
+  }
+
+  func updateSystemPrompt(_ prompt: String) {
+    settings.systemPrompt = prompt
     persist()
   }
 

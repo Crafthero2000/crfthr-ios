@@ -6,6 +6,7 @@ final class SettingsViewModel: ObservableObject {
   @Published var models: [ModelRecord] = []
   @Published var selectedModelId: String?
   @Published var generation: GenerationSettings = .defaults
+  @Published var systemPrompt: String = AppSettings.defaultSystemPrompt
 
   private let modelStore: ModelStore
   private let settingsStore: SettingsStore
@@ -19,6 +20,7 @@ final class SettingsViewModel: ObservableObject {
     let appSettings = await settingsStore.load()
     generation = appSettings.generation
     selectedModelId = appSettings.selectedModelId
+    systemPrompt = appSettings.systemPrompt
     models = await modelStore.load()
   }
 
@@ -38,5 +40,16 @@ final class SettingsViewModel: ObservableObject {
     Task {
       await settingsStore.updateGeneration(generation)
     }
+  }
+
+  func updateSystemPrompt(_ prompt: String) {
+    systemPrompt = prompt
+    Task {
+      await settingsStore.updateSystemPrompt(prompt)
+    }
+  }
+
+  func resetSystemPrompt() {
+    updateSystemPrompt(AppSettings.defaultSystemPrompt)
   }
 }

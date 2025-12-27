@@ -1,0 +1,58 @@
+﻿"tab.chat" = "Чат";
+"tab.models" = "Модели";
+"tab.settings" = "Настройки";
+
+"chat.title" = "Локальный ассистент";
+"action.export" = "Экспорт";
+"action.clear" = "Очистить";
+"action.done" = "Готово";
+"export.text" = "Экспорт TXT";
+"export.json" = "Экспорт JSON";
+
+"settings.section.model" = "Модель";
+"settings.no_models" = "Пока нет установленных моделей. Скачайте в разделе «Модели».";
+"settings.none" = "Нет";
+"settings.selected_model" = "Выбранная модель";
+"settings.section.generation" = "Генерация";
+"settings.max_tokens" = "Макс. токенов: %d";
+"settings.temperature" = "Температура: %.2f";
+"settings.top_p" = "Top-P: %.2f";
+"settings.context_limit" = "Контекст: %d";
+"settings.section.system_prompt" = "Системный промт";
+"settings.system_prompt.placeholder" = "Опишите стиль и правила ответа...";
+"settings.system_prompt.help" = "Влияет на стиль и правила ответа.";
+"settings.system_prompt.reset" = "Сбросить на стандартный";
+"settings.title" = "Настройки";
+
+"models.section.installed" = "Установленные";
+"models.none" = "Модели пока не скачаны.";
+"models.badge.imported" = "Импорт";
+"models.section.download" = "Скачать с Hugging Face";
+"models.repo_id.placeholder" = "Repo ID (например, mlx-community/Qwen2.5-1.5B-Instruct-4bit)";
+"models.action.download" = "Скачать модель";
+"models.section.suggested" = "Рекомендуемые";
+"models.section.import" = "Импорт локальной модели";
+"models.action.import" = "Импорт из Файлов";
+"models.section.error" = "Ошибка";
+"models.title" = "Модели";
+
+"models.status.starting" = "Начинаю загрузку...";
+"models.status.downloaded" = "Загружено";
+"models.status.importing" = "Импортирую...";
+"models.status.imported" = "Импортировано";
+"models.error.access" = "Не удалось получить доступ к выбранной папке.";
+
+"status.loading_model" = "Загрузка модели... %.0f%%";
+"status.model_ready" = "Модель готова";
+
+"export.role.user" = "Вы";
+"export.role.assistant" = "Ассистент";
+"export.role.system" = "Система";
+"export.separator" = "---";
+
+"error.model.not_selected" = "Модель не выбрана. Выберите в настройках или скачайте модель.";
+"error.model.not_available" = "Выбранная модель недоступна. Сначала скачайте или импортируйте.";
+"error.model.missing" = "Файлы модели не найдены в песочнице приложения.";
+"error.model.not_loaded" = "Модель не загружена.";
+"error.model.load_failed" = "Не удалось загрузить модель: %@";
+"error.generation_failed" = "Ошибка генерации: %@";

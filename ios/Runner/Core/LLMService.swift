@@ -14,17 +14,17 @@ enum LLMServiceError: LocalizedError {
   var errorDescription: String? {
     switch self {
     case .modelNotSelected:
-      return "No model selected. Choose one in Settings or download a model."
+      return NSLocalizedString("error.model.not_selected", comment: "Model not selected")
     case .modelNotAvailable:
-      return "Selected model is not available. Download or import it first."
+      return NSLocalizedString("error.model.not_available", comment: "Model not available")
     case .modelDirectoryMissing:
-      return "Model files are missing in the app sandbox."
+      return NSLocalizedString("error.model.missing", comment: "Model directory missing")
     case .modelNotLoaded:
-      return "Model is not loaded."
+      return NSLocalizedString("error.model.not_loaded", comment: "Model not loaded")
     case .modelLoadFailed(let detail):
-      return "Failed to load model: \(detail)"
+      return String(format: NSLocalizedString("error.model.load_failed", comment: "Model load failed"), detail)
     case .generationFailed(let detail):
-      return "Generation failed: \(detail)"
+      return String(format: NSLocalizedString("error.generation_failed", comment: "Generation failed"), detail)
     }
   }
 }
@@ -72,13 +72,18 @@ actor LLMService {
   func summarizeIfNeeded(
     messages: [ChatMessage],
     summary: String?,
-    settings: GenerationSettings
+    settings: GenerationSettings,
+    systemPrompt: String
   ) async throws -> (summary: String?, messages: [ChatMessage]) {
     let limit = settings.contextLimit
     guard limit > 0 else { return (summary, messages) }
     guard messages.count > 8 else { return (summary, messages) }
 
-    let estimatedTokens = await estimateTokenCount(messages: messages, summary: summary)
+    let estimatedTokens = await estimateTokenCount(
+      messages: messages,
+      summary: summary,
+      systemPrompt: systemPrompt
+    )
     if estimatedTokens <= limit { return (summary, messages) }
 
     let keepCount = 8
@@ -92,11 +97,16 @@ actor LLMService {
   func streamResponse(
     messages: [ChatMessage],
     summary: String?,
-    settings: GenerationSettings
+    settings: GenerationSettings,
+    systemPrompt: String
   ) async throws -> AsyncThrowingStream<String, Error> {
     guard let container = modelContainer else { throw LLMServiceError.modelNotLoaded }
 
-    let chatMessages = buildChatMessages(messages: messages, summary: summary)
+    let chatMessages = buildChatMessages(
+      messages: messages,
+      summary: summary,
+      systemPrompt: systemPrompt
+    )
     let userInput = UserInput(chat: chatMessages)
     let parameters = GenerateParameters(
       maxTokens: settings.maxTokens,
@@ -187,11 +197,19 @@ actor LLMService {
     }
   }
 
-  private func estimateTokenCount(messages: [ChatMessage], summary: String?) async -> Int {
+  private func estimateTokenCount(
+    messages: [ChatMessage],
+    summary: String?,
+    systemPrompt: String
+  ) async -> Int {
     guard let container = modelContainer else { return approximateTokenCount(messages: messages, summary: summary) }
 
     return await container.perform { context in
-      let rawMessages = buildRawMessages(messages: messages, summary: summary)
+      let rawMessages = buildRawMessages(
+        messages: messages,
+        summary: summary,
+        systemPrompt: systemPrompt
+      )
       do {
         let tokens = try context.tokenizer.applyChatTemplate(messages: rawMessages)
         return tokens.count
@@ -207,10 +225,18 @@ actor LLMService {
     return max(1, joined.count / 4)
   }
 
-  private func buildChatMessages(messages: [ChatMessage], summary: String?) -> [Chat.Message] {
+  private func buildChatMessages(
+    messages: [ChatMessage],
+    summary: String?,
+    systemPrompt: String
+  ) -> [Chat.Message] {
     var result: [Chat.Message] = []
+    let trimmedPrompt = systemPrompt.trimmingCharacters(in: .whitespacesAndNewlines)
+    if !trimmedPrompt.isEmpty {
+      result.append(.system(trimmedPrompt))
+    }
     if let summary, !summary.isEmpty {
-      result.append(.system("Memory:\n\(summary)"))
+      result.append(.system("Память:\n\(summary)"))
     }
     result.append(contentsOf: messages.map { message in
       switch message.role {
@@ -225,12 +251,37 @@ actor LLMService {
     return result
   }
 
-  private func buildRawMessages(messages: [ChatMessage], summary: String?) -> [[String: String]] {
+  private func buildRawMessages(
+    messages: [ChatMessage],
+    summary: String?,
+    systemPrompt: String
+  ) -> [[String: String]] {
     var raw: [[String: String]] = []
+    let trimmedPrompt = systemPrompt.trimmingCharacters(in: .whitespacesAndNewlines)
+    if !trimmedPrompt.isEmpty {
+      raw.append(["role": "system", "content": trimmedPrompt])
+    }
     if let summary, !summary.isEmpty {
-      raw.append(["role": "system", "content": "Memory:\n\(summary)"])
+      raw.append(["role": "system", "content": "Память:\n\(summary)"])
     }
     raw.append(contentsOf: messages.map { ["role": $0.role.rawValue, "content": $0.content] })
     return raw
   }
-}
+
+  nonisolated static func postProcessResponse(_ text: String) -> String {
+    let lines = text.split(separator: "\n", omittingEmptySubsequences: false)
+    var result: [Substring] = []
+    for line in lines {
+      let trimmed = line.trimmingCharacters(in: .whitespaces)
+      let isList = trimmed.hasPrefix("- ")
+        || trimmed.range(of: #"^\d+\."#, options: .regularExpression) != nil
+      if isList, let last = result.last {
+        if !last.trimmingCharacters(in: .whitespaces).isEmpty {
+          result.append("")
+        }
+      }
+      result.append(line)
+    }
+    return result.joined(separator: "\n")
+  }
+}

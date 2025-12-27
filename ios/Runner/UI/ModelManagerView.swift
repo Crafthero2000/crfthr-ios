@@ -7,9 +7,9 @@ struct ModelManagerView: View {
 
   var body: some View {
     List {
-      Section("Installed") {
+      Section("models.section.installed") {
         if viewModel.models.isEmpty {
-          Text("No models downloaded yet.")
+          Text("models.none")
             .foregroundColor(.secondary)
         } else {
           ForEach(viewModel.models) { model in
@@ -23,7 +23,7 @@ struct ModelManagerView: View {
               }
               Spacer()
               if model.isLocal {
-                Text("Imported")
+                Text("models.badge.imported")
                   .font(.caption)
                   .padding(.horizontal, 8)
                   .padding(.vertical, 4)
@@ -35,8 +35,8 @@ struct ModelManagerView: View {
         }
       }
 
-      Section("Download from Hugging Face") {
-        TextField("Repo ID (e.g. mlx-community/Qwen2.5-1.5B-Instruct-4bit)", text: $viewModel.repoIdInput)
+      Section("models.section.download") {
+        TextField("models.repo_id.placeholder", text: $viewModel.repoIdInput)
           .textInputAutocapitalization(.never)
           .autocorrectionDisabled(true)
 
@@ -45,7 +45,7 @@ struct ModelManagerView: View {
         } label: {
           HStack {
             Image(systemName: "arrow.down.circle")
-            Text("Download model")
+            Text("models.action.download")
           }
         }
         .disabled(viewModel.isDownloading)
@@ -61,7 +61,7 @@ struct ModelManagerView: View {
 
         if !viewModel.recommendedModels.isEmpty {
           VStack(alignment: .leading, spacing: 6) {
-            Text("Suggested")
+            Text("models.section.suggested")
               .font(.caption)
               .foregroundColor(.secondary)
             ForEach(viewModel.recommendedModels) { model in
@@ -75,26 +75,26 @@ struct ModelManagerView: View {
         }
       }
 
-      Section("Import local model") {
+      Section("models.section.import") {
         Button {
           isImporting = true
         } label: {
           HStack {
             Image(systemName: "folder")
-            Text("Import from Files")
+            Text("models.action.import")
           }
         }
         .disabled(viewModel.isDownloading)
       }
 
       if let error = viewModel.errorMessage {
-        Section("Error") {
+        Section("models.section.error") {
           Text(error)
             .foregroundColor(.red)
         }
       }
     }
-    .navigationTitle("Models")
+    .navigationTitle("models.title")
     .fileImporter(
       isPresented: $isImporting,
       allowedContentTypes: [.folder],

@@ -9,21 +9,21 @@ struct RootView: View {
         ChatView(viewModel: appState.chatViewModel)
       }
       .tabItem {
-        Label("Chat", systemImage: "bubble.left.and.bubble.right")
+        Label("tab.chat", systemImage: "bubble.left.and.bubble.right")
       }
 
       NavigationStack {
         ModelManagerView(viewModel: appState.modelManagerViewModel)
       }
       .tabItem {
-        Label("Models", systemImage: "square.and.arrow.down")
+        Label("tab.models", systemImage: "square.and.arrow.down")
       }
 
       NavigationStack {
         SettingsView(viewModel: appState.settingsViewModel)
       }
       .tabItem {
-        Label("Settings", systemImage: "slider.horizontal.3")
+        Label("tab.settings", systemImage: "slider.horizontal.3")
       }
     }
   }

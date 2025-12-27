@@ -19,9 +19,12 @@ final class ChatViewModel: ObservableObject {
       case .idle:
         return nil
       case .loading(let progress):
-        return String(format: "Loading model… %.0f%%", progress * 100)
+        return String(
+          format: NSLocalizedString("status.loading_model", comment: "Loading model"),
+          progress * 100
+        )
       case .ready:
-        return "Model ready"
+        return NSLocalizedString("status.model_ready", comment: "Model ready")
       case .failed(let message):
         return message
       }
@@ -33,6 +36,8 @@ final class ChatViewModel: ObservableObject {
   @Published var isGenerating = false
   @Published var modelState: ModelState = .idle
   @Published var errorMessage: String?
+  @Published var exportText: String = ""
+  @Published var exportJSON: String = ""
 
   private let chatStore: ChatStore
   private let modelStore: ModelStore
@@ -54,6 +59,7 @@ final class ChatViewModel: ObservableObject {
   func load() async {
     let snapshot = await chatStore.load()
     messages = snapshot.messages
+    await refreshExports()
   }
 
   func sendMessage() {
@@ -66,15 +72,7 @@ final class ChatViewModel: ObservableObject {
   func clearHistory() async {
     let snapshot = await chatStore.clear()
     messages = snapshot.messages
-  }
-
-  func exportHistoryData() async -> Data? {
-    do {
-      return try await chatStore.exportJSONData()
-    } catch {
-      errorMessage = error.localizedDescription
-      return nil
-    }
+    await refreshExports()
   }
 
   private func send(_ text: String) async {
@@ -105,7 +103,8 @@ final class ChatViewModel: ObservableObject {
       let summaryResult = try await llmService.summarizeIfNeeded(
         messages: snapshot.messages,
         summary: snapshot.summary,
-        settings: settings.generation
+        settings: settings.generation,
+        systemPrompt: settings.systemPrompt
       )
 
       if summaryResult.summary != snapshot.summary || summaryResult.messages != snapshot.messages {
@@ -121,17 +120,23 @@ final class ChatViewModel: ObservableObject {
       let stream = try await llmService.streamResponse(
         messages: summaryResult.messages,
         summary: summaryResult.summary,
-        settings: settings.generation
+        settings: settings.generation,
+        systemPrompt: settings.systemPrompt
       )
 
       var assistantText = ""
       for try await chunk in stream {
         assistantText += chunk
-        updateMessage(id: assistantMessage.id, content: assistantText)
-        await chatStore.updateMessage(id: assistantMessage.id, content: assistantText)
+        let displayText = LLMService.postProcessResponse(assistantText)
+        updateMessage(id: assistantMessage.id, content: displayText)
+        await chatStore.updateMessage(id: assistantMessage.id, content: displayText)
       }
 
+      let finalText = LLMService.postProcessResponse(assistantText)
+      updateMessage(id: assistantMessage.id, content: finalText)
+      await chatStore.updateMessage(id: assistantMessage.id, content: finalText)
       await chatStore.save()
+      await refreshExports()
     } catch {
       errorMessage = error.localizedDescription
       modelState = .failed(error.localizedDescription)
@@ -144,4 +149,41 @@ final class ChatViewModel: ObservableObject {
     guard let index = messages.firstIndex(where: { $0.id == id }) else { return }
     messages[index].content = content
   }
-}
+
+  private func refreshExports() async {
+    let items = await chatStore.exportItems()
+    exportText = buildExportText(items: items)
+    exportJSON = buildExportJSON(items: items)
+  }
+
+  private func buildExportText(items: [ChatExportItem]) -> String {
+    let roleUser = NSLocalizedString("export.role.user", comment: "Export role user")
+    let roleAssistant = NSLocalizedString("export.role.assistant", comment: "Export role assistant")
+    let roleSystem = NSLocalizedString("export.role.system", comment: "Export role system")
+    let separator = NSLocalizedString("export.separator", comment: "Export separator")
+
+    let blocks = items.map { item -> String in
+      let label: String
+      switch item.role {
+      case "user":
+        label = roleUser
+      case "assistant":
+        label = roleAssistant
+      default:
+        label = roleSystem
+      }
+      return "\(label): \(item.content)"
+    }
+    return blocks.joined(separator: "\n\(separator)\n")
+  }
+
+  private func buildExportJSON(items: [ChatExportItem]) -> String {
+    let encoder = JSONEncoder()
+    encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+    guard let data = try? encoder.encode(items),
+          let json = String(data: data, encoding: .utf8) else {
+      return ""
+    }
+    return json
+  }
+}
