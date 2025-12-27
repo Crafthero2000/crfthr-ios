@@ -117,22 +117,14 @@ final class ChatViewModel: ObservableObject {
       let assistantMessage = await chatStore.append(role: .assistant, content: "")
       messages.append(assistantMessage)
 
-      let stream = try await llmService.streamResponse(
+      let responseText = try await llmService.generateVerifiedResponse(
         messages: summaryResult.messages,
         summary: summaryResult.summary,
         settings: settings.generation,
         systemPrompt: settings.systemPrompt
       )
 
-      var assistantText = ""
-      for try await chunk in stream {
-        assistantText += chunk
-        let displayText = LLMService.postProcessResponse(assistantText)
-        updateMessage(id: assistantMessage.id, content: displayText)
-        await chatStore.updateMessage(id: assistantMessage.id, content: displayText)
-      }
-
-      let finalText = LLMService.postProcessResponse(assistantText)
+      let finalText = LLMService.postProcessResponse(responseText)
       updateMessage(id: assistantMessage.id, content: finalText)
       await chatStore.updateMessage(id: assistantMessage.id, content: finalText)
       await chatStore.save()

@@ -148,6 +148,95 @@ actor LLMService {
     return stream
   }
 
+  func generateOnce(
+    messages: [ChatMessage],
+    summary: String?,
+    settings: GenerationSettings,
+    systemPrompt: String,
+    maxTokensOverride: Int? = nil,
+    temperatureOverride: Double? = nil
+  ) async throws -> String {
+    guard let container = modelContainer else { throw LLMServiceError.modelNotLoaded }
+
+    let chatMessages = buildChatMessages(
+      messages: messages,
+      summary: summary,
+      systemPrompt: systemPrompt
+    )
+    let userInput = UserInput(chat: chatMessages)
+    let parameters = GenerateParameters(
+      maxTokens: maxTokensOverride ?? settings.maxTokens,
+      maxKVSize: settings.contextLimit > 0 ? settings.contextLimit : nil,
+      temperature: Float(temperatureOverride ?? settings.temperature),
+      topP: Float(settings.topP)
+    )
+
+    do {
+      let output = try await container.perform { context in
+        let input = try await context.processor.prepare(input: userInput)
+        let generationStream = try MLXLMCommon.generate(
+          input: input,
+          parameters: parameters,
+          context: context
+        )
+
+        var text = ""
+        for await generation in generationStream {
+          if let chunk = generation.chunk {
+            text += chunk
+          }
+        }
+
+        Stream().synchronize()
+        return text.trimmingCharacters(in: .whitespacesAndNewlines)
+      }
+      return output
+    } catch {
+      throw LLMServiceError.generationFailed(error.localizedDescription)
+    }
+  }
+
+  func generateVerifiedResponse(
+    messages: [ChatMessage],
+    summary: String?,
+    settings: GenerationSettings,
+    systemPrompt: String
+  ) async throws -> String {
+    let draft = try await generateOnce(
+      messages: messages,
+      summary: summary,
+      settings: settings,
+      systemPrompt: systemPrompt,
+      temperatureOverride: min(settings.temperature, 0.6)
+    )
+
+    guard let lastUserMessage = messages.last(where: { $0.role == .user }) else {
+      throw LLMServiceError.generationFailed("Missing user message for verification.")
+    }
+
+    let validatorInstruction = """
+    Ты — редактор и проверяющий. Твоя задача: найти ошибки, выдумки, смешение языков, неверные переводы, противоречия и исправить ответ.
+    Если ответ — перевод, проверь что целевой язык действительно соблюдён (для китайского: иероглифы + pinyin).
+    Верни ТОЛЬКО исправленный финальный ответ. Без комментариев, без рассуждений.
+    """
+
+    let verificationMessages = [
+      ChatMessage(role: .user, content: lastUserMessage.content),
+      ChatMessage(role: .assistant, content: draft)
+    ]
+
+    let final = try await generateOnce(
+      messages: verificationMessages,
+      summary: nil,
+      settings: settings,
+      systemPrompt: validatorInstruction,
+      maxTokensOverride: settings.maxTokens,
+      temperatureOverride: 0.2
+    )
+
+    return final
+  }
+
   private func generateSummary(previousSummary: String?, messages: [ChatMessage]) async throws -> String {
     guard let container = modelContainer else { throw LLMServiceError.modelNotLoaded }
 

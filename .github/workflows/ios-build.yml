@@ -30,6 +30,10 @@ jobs:
           print("All .swift files are valid UTF-8.")
           PY
 
+      - name: Ensure working tree is clean
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then echo "..."; git status --porcelain; exit 1; fi
+
       - name: Build app (unsigned)
         run: |
           xcodebuild \
